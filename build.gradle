@@ -1,8 +1,8 @@
 plugins {
-    id 'com.github.ben-manes.versions' version '0.17.0'
-    id 'net.researchgate.release' version '2.6.0'
-    id 'org.ajoberstar.grgit' version '2.1.1'
-    id 'org.sonarqube' version '2.6.2'
+    id 'com.github.ben-manes.versions' version '0.20.0'
+    id 'net.researchgate.release' version '2.8.0'
+    id 'org.ajoberstar.grgit' version '3.0.0'
+    id 'org.sonarqube' version '2.7'
 }
 
 apply plugin: 'java'
@@ -10,8 +10,6 @@ apply plugin: 'checkstyle'
 apply plugin: 'pmd'
 apply plugin: 'jacoco'
 apply plugin: 'signing'
-
-import org.ajoberstar.grgit.*
 
 group = 'io.bit3'
 description = 'SASS compiler using libsass.'
@@ -26,31 +24,34 @@ jar {
     }
 }
 
-// Pinned to checkstyle 6.7 because newer versions are incompatible with gradle <=2.6
-// https://issues.gradle.org/browse/GRADLE-3314
-checkstyle {
-    toolVersion = "6.7"
-}
-
-pmd {
-    toolVersion = "4.3"
-}
-
-jacoco {
-    toolVersion = "0.7.6.201602180812"
-}
-
 repositories {
     mavenCentral()
 }
 
+dependencyLocking {
+    lockAllConfigurations()
+}
+
 dependencies {
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
-    compile group: 'org.apache.commons', name: 'commons-text', version: '1.3'
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
-    testCompile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+    compile group: 'org.apache.commons', name: 'commons-text', version: '1.6'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
+    testCompile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.26'
     testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+dependencyUpdates.resolutionStrategy {
+    componentSelection { rules ->
+        rules.all { ComponentSelection selection ->
+            boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm', 'preview'].any { qualifier ->
+                selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
+            }
+            if (rejected) {
+                selection.reject('Release candidate')
+            }
+        }
+    }
 }
 
 release {
@@ -61,8 +62,7 @@ release {
 
 sonarqube {
     properties {
-        def git = Grgit.open();
-        def description = git.describe()
+        def description = grgit.describe()
 
         property "sonar.exclusions", "**/src/main/libsass/**"
         property "sonar.projectVersion", description
@@ -72,11 +72,26 @@ sonarqube {
 
 // jni header generation
 task jniHeaders(type:Exec) {
-    def mainClasspath = sourceSets.main.output.classesDir
-    commandLine "javah", "-classpath", mainClasspath, "-d", "src/main/c", "-jni", "-force", "io.bit3.jsass.adapter.NativeAdapter"
+    def javaVersion = JavaVersion.current()
+    def isJava9Compatible = javaVersion.isJava9Compatible()
 
-    def testClasspath = sourceSets.test.output.classesDir
-    commandLine "javah", "-classpath", testClasspath, "-d", "src/test/c", "-jni", "-force", "io.bit3.jsass.adapter.NativeTestAdapter"
+    def mainClasspath = sourceSets.main.output.classesDirs.asPath
+    if (isJava9Compatible) {
+        // JDK 9 or newer
+        commandLine "javac", "-h", "src/main/c", "-classpath", mainClasspath, "src/main/java/io/bit3/jsass/adapter/NativeAdapter.java"
+    } else {
+        // JDK 8 or older
+        commandLine "javah", "-classpath", mainClasspath, "-d", "src/main/c", "-jni", "-force", "io.bit3.jsass.adapter.NativeAdapter"
+    }
+
+    def testClasspath = sourceSets.test.output.classesDirs.asPath
+    if (isJava9Compatible) {
+        // JDK 9 or newer
+        commandLine "javac", "-h", "src/test/c", "-classpath", testClasspath, "src/test/java/io/bit3/jsass/adapter/NativeTestAdapter.java"
+    } else {
+        // JDK 8 or older
+        commandLine "javah", "-classpath", testClasspath, "-d", "src/test/c", "-jni", "-force", "io.bit3.jsass.adapter.NativeTestAdapter"
+    }
 
     dependsOn classes
     dependsOn testClasses
@@ -85,13 +100,13 @@ jar.dependsOn jniHeaders
 
 // javadoc.jar generation
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
 
 // sources.jar generation
 task sourceJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
@@ -117,38 +132,40 @@ def isVerbose() {
 }
 
 task determineUid() {
-    project.ext['uid'] = 0
+    def file = new File(project.buildDir, "uid")
+
+    project.ext['uid'] = file.canRead() ? new String(file.readBytes()) : 0
+    outputs.file(file)
 
     doLast {
         def user = System.getProperty("user.name")
-        def output = new ByteArrayOutputStream();
+        def output = new ByteArrayOutputStream()
         exec {
             commandLine 'id', '-u', user
             standardOutput = output
         }
-        project.ext['uid'] = output.toString().trim()
+        def uid = output.toString().trim()
+        file.write((String) uid)
+        project.ext['uid'] = uid
     }
 }
 
 task determineGid() {
-    project.ext['gid'] = 0
+    def file = new File(project.buildDir, "gid")
+
+    project.ext['gid'] = file.canRead() ? new String(file.readBytes()) : 0
+    outputs.file(file)
 
     doLast {
         def user = System.getProperty("user.name")
-        def output = new ByteArrayOutputStream();
+        def output = new ByteArrayOutputStream()
         exec {
             commandLine 'id', '-g', user
             standardOutput = output
         }
-        project.ext['gid'] = output.toString().trim()
-    }
-}
-
-task determineCurrentWorkingDirectory() {
-    project.ext['cwd'] = '/'
-
-    doLast {
-        project.ext['cwd'] = new File('.').absolutePath
+        def gid = output.toString().trim()
+        file.write((String) gid)
+        project.ext['gid'] = gid
     }
 }
 
@@ -156,15 +173,14 @@ task determineRepositoryHeadStability() {
     project.ext['headIsUpstream'] = true
 
     doLast {
-        def repo = Grgit.open()
-        def branch = repo.branch.getCurrent()
+        def branch = grgit.branch.current()
 
         if (branch) {
             branch = branch.getName()
         }
 
-        if (!branch || 'HEAD'.equals(branch)) {
-            def tag = repo.describe()
+        if (!branch || 'HEAD' == branch) {
+            def tag = grgit.describe()
 
             project.ext['headIsUpstream'] = !(tag =~ /^\d+(\.\d+)+$/)
         } else {
@@ -174,6 +190,9 @@ task determineRepositoryHeadStability() {
 }
 
 task determineDockerAvailable() {
+    def file = new File(project.buildDir, "docker")
+    outputs.file(file)
+
     doLast {
         def execResult = exec {
             commandLine 'docker', '--version'
@@ -185,10 +204,12 @@ task determineDockerAvailable() {
         if (execResult.exitValue != 0) {
             throw new GradleException("Docker is required to run this task")
         }
+
+        file.write("available")
     }
 }
 
-def runDockerContainer(name) {
+def pullDockerContainer(name) {
     def type = 'stable'
 
     if (headIsUpstream) {
@@ -197,8 +218,34 @@ def runDockerContainer(name) {
 
     def output = new ByteArrayOutputStream()
     def execResult = exec {
-        workingDir cwd
-        commandLine 'docker', 'run', "--user=$uid:$gid", '--rm', '-v', "$cwd:/jsass", "bit3/jsass-$name:$type"
+        workingDir project.projectDir
+        commandLine 'docker', 'pull', "bit3/jsass-$name:$type"
+
+        if (!isVerbose()) {
+            standardOutput = output
+            errorOutput = output
+            ignoreExitValue = true
+        }
+    }
+
+    if (execResult.exitValue != 0) {
+        throw new GradleException("Docker pull failed\n" + output.toString())
+    }
+}
+
+def runDockerContainer(name) {
+    pullDockerContainer(name)
+
+    def type = 'stable'
+
+    if (headIsUpstream) {
+        type = 'latest'
+    }
+
+    def output = new ByteArrayOutputStream()
+    def execResult = exec {
+        workingDir project.projectDir
+        commandLine 'docker', 'run', "--user=$uid:$gid", '--rm', '-v', "${project.projectDir}:/jsass", "bit3/jsass-$name:$type"
 
         if (!isVerbose()) {
             standardOutput = output
@@ -243,7 +290,7 @@ task buildNativeLibs {
 }
 
 task buildNativeDarwin64Libs {
-    dependsOn determineUid, determineGid, determineCurrentWorkingDirectory, determineRepositoryHeadStability, determineDockerAvailable
+    dependsOn determineUid, determineGid, determineRepositoryHeadStability, determineDockerAvailable
 
     doLast {
         println 'Build native libs for darwin x64'
@@ -252,7 +299,7 @@ task buildNativeDarwin64Libs {
 }
 
 task buildNativeLinux32Libs {
-    dependsOn determineUid, determineGid, determineCurrentWorkingDirectory, determineRepositoryHeadStability, determineDockerAvailable
+    dependsOn determineUid, determineGid, determineRepositoryHeadStability, determineDockerAvailable
 
     doLast {
         println 'Build native libs for linux x32'
@@ -261,7 +308,7 @@ task buildNativeLinux32Libs {
 }
 
 task buildNativeLinux64Libs {
-    dependsOn determineUid, determineGid, determineCurrentWorkingDirectory, determineRepositoryHeadStability, determineDockerAvailable
+    dependsOn determineUid, determineGid, determineRepositoryHeadStability, determineDockerAvailable
 
     doLast {
         println 'Build native libs for linux x64'
@@ -270,7 +317,7 @@ task buildNativeLinux64Libs {
 }
 
 task buildNativeLinuxArmhf32Libs {
-    dependsOn determineUid, determineGid, determineCurrentWorkingDirectory, determineRepositoryHeadStability, determineDockerAvailable
+    dependsOn determineUid, determineGid, determineRepositoryHeadStability, determineDockerAvailable
 
     doLast {
         println 'Build native libs for linux armhf32'
@@ -279,7 +326,7 @@ task buildNativeLinuxArmhf32Libs {
 }
 
 task buildNativeWindows32Libs {
-    dependsOn determineUid, determineGid, determineCurrentWorkingDirectory, determineRepositoryHeadStability, determineDockerAvailable
+    dependsOn determineUid, determineGid, determineRepositoryHeadStability, determineDockerAvailable
 
     doLast {
         println 'Build native libs for windows x32'
@@ -288,7 +335,7 @@ task buildNativeWindows32Libs {
 }
 
 task buildNativeWindows64Libs {
-    dependsOn determineUid, determineGid, determineCurrentWorkingDirectory, determineRepositoryHeadStability, determineDockerAvailable
+    dependsOn determineUid, determineGid, determineRepositoryHeadStability, determineDockerAvailable
 
     doLast {
         println 'Build native libs for windows x64'
@@ -308,7 +355,7 @@ task runDockerTests {
 }
 
 task runDockerTestCentOS6x32 {
-    dependsOn determineUid, determineGid, determineCurrentWorkingDirectory, determineRepositoryHeadStability, determineDockerAvailable
+    dependsOn determineUid, determineGid, determineRepositoryHeadStability, determineDockerAvailable
 
     doLast {
         println 'Run Docker CentOS 6 test container'
@@ -317,7 +364,7 @@ task runDockerTestCentOS6x32 {
 }
 
 task runDockerTestCentOS6x64 {
-    dependsOn determineUid, determineGid, determineCurrentWorkingDirectory, determineRepositoryHeadStability, determineDockerAvailable
+    dependsOn determineUid, determineGid, determineRepositoryHeadStability, determineDockerAvailable
 
     doLast {
         println 'Run Docker CentOS 6 test container'
@@ -326,7 +373,7 @@ task runDockerTestCentOS6x64 {
 }
 
 task runDockerTestCentOS7 {
-    dependsOn determineUid, determineGid, determineCurrentWorkingDirectory, determineRepositoryHeadStability, determineDockerAvailable
+    dependsOn determineUid, determineGid, determineRepositoryHeadStability, determineDockerAvailable
 
     doLast {
         println 'Run Docker CentOS 7 test container'
@@ -335,7 +382,7 @@ task runDockerTestCentOS7 {
 }
 
 task runDockerTestUbuntu1404 {
-    dependsOn determineUid, determineGid, determineCurrentWorkingDirectory, determineRepositoryHeadStability, determineDockerAvailable
+    dependsOn determineUid, determineGid, determineRepositoryHeadStability, determineDockerAvailable
 
     doLast {
         println 'Run Docker ubuntu 14.04 test container'
@@ -344,7 +391,7 @@ task runDockerTestUbuntu1404 {
 }
 
 task runDockerTestUbuntu1604 {
-    dependsOn determineUid, determineGid, determineCurrentWorkingDirectory, determineRepositoryHeadStability, determineDockerAvailable
+    dependsOn determineUid, determineGid, determineRepositoryHeadStability, determineDockerAvailable
 
     doLast {
         println 'Run Docker ubuntu 16.04 test container'
