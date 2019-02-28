@@ -1,0 +1,53 @@
+image: openjdk:11
+
+cache:
+  paths:
+    - .gradle
+
+build:
+  stage: build
+  artifacts:
+    expire_in: 30 days
+    paths:
+      - build
+  script:
+    - ./gradlew --info --no-daemon classes testClasses
+
+check-openjdk11:
+  stage: test
+  dependencies:
+    - build
+  script:
+    - ./gradlew --no-daemon --info --full-stacktrace -g /tmp clean check
+
+test-centos6:
+  stage: test
+  image: registry.gitlab.com/jsass/docker/test-centos6-x64:latest
+  dependencies:
+    - build
+  script:
+    - ./bin/run-ci-tests.sh
+
+test-centos7:
+  stage: test
+  image: registry.gitlab.com/jsass/docker/test-centos7:latest
+  dependencies:
+    - build
+  script:
+    - ./bin/run-ci-tests.sh
+
+test-ubuntu14.04:
+  stage: test
+  image: registry.gitlab.com/jsass/docker/test-ubuntu14.04:latest
+  dependencies:
+    - build
+  script:
+    - ./bin/run-ci-tests.sh
+
+test-ubuntu16.04:
+  stage: test
+  image: registry.gitlab.com/jsass/docker/test-ubuntu16.04:latest
+  dependencies:
+    - build
+  script:
+    - ./bin/run-ci-tests.sh
