@@ -1,5 +1,9 @@
 [![pipeline status](https://gitlab.com/jsass/jsass/badges/master/pipeline.svg)](https://gitlab.com/jsass/jsass/commits/master)
 [![Build Status](https://img.shields.io/travis/bit3/jsass/master.svg?style=flat&logo=travis)](https://travis-ci.org/bit3/jsass)
+[![Build Status](https://cloud.drone.io/api/badges/bit3/jsass/status.svg)](https://cloud.drone.io/bit3/jsass)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/bit3/jsass/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/bit3/jsass/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/bit3/jsass/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/bit3/jsass/?branch=master)
+[![Known Vulnerabilities](https://snyk.io/test/github/bit3/jsass/badge.svg)](https://snyk.io/test/github/bit3/jsass)
 [![Documentation Status](https://readthedocs.org/projects/jsass/badge/?version=latest)](http://jsass.readthedocs.io/en/latest/)
 [![Javadoc Status](https://javadocio-badges.herokuapp.com/io.bit3/jsass/badge.svg)](http://javadoc.io/doc/io.bit3/jsass/)
 
@@ -32,22 +36,42 @@ You can find the changelog in our documentation at [jsass.rtfd.org/en/latest/cha
 
 [changelog]: http://jsass.readthedocs.org/en/latest/changelog.html
 
-Compatibility
--------------
+Third party projects
+--------------------
 
-| Compatibility                         |                                                                     |
-| --------------------------------------|---------------------------------------------------------------------|
-| ![Java 7][java7]                      | not supported, jsass uses Java 8 features like streams and lambdas! |
-| ![Java 8][java8]                      | fully supported                                                     |
-| ![Java 11][java11]                    | fully supported and [tested][gitlab-ci] (gitlab ci)                 |
-| ![CentOS 6 (x86_64)][centos6]         | fully supported and [tested][gitlab-ci] (gitlab ci)                 |
-| ![CentOS 7 (x86_64)][centos7]         | fully supported and [tested][gitlab-ci] (gitlab ci)                 |
-| ![ubuntu 12.04 (x86_64)][ubuntu12.04] | fully supported and [tested][gitlab-ci] (gitlab ci)                 |
-| ![ubuntu 14.04 (x86_64)][ubuntu14.04] | fully supported and [tested][gitlab-ci] (gitlab ci)                 |
-| ![Windows 32bit][windows32]           | not supported                                                       |
-| ![Windows 64bit][windows64]           | supported, but not tested                                           |
-| ![OS X][osx]                          | fully supported and [tested][travis-ci] (travis ci)                 |
-| ![ARM (armhf32)][armhf32]             | experimental, untested                                              |
+Third party projects using JSASS.
+
+- [libsass-maven-plugin](https://github.com/warmuuh/libsass-maven-plugin)
+- [lein-jsass (Clojure)](https://clojars.org/lein-jsass)
+- [oVirt](https://www.ovirt.org/)
+
+Merge requests for further projects are welcome :-)
+
+Compatibility Overview
+----------------------
+
+| Compatibility                         |                                                                      |
+| --------------------------------------|----------------------------------------------------------------------|
+| ![Java 7][java7]                      | not supported, jsass uses Java 8 features like streams and lambdas!  |
+| ![Java 8][java8]                      | fully supported                                                      |
+| ![Java 11][java11]                    | fully supported and [tested][gitlab-ci] (gitlab ci)                  |
+| **Linux**                             |                                                                      |
+| ![CentOS 6 (i686)][centos6_32]        | not supported (since jsass 5.7.4 the 32bit support was been removed) |
+| ![CentOS 6 (x86_64)][centos6]         | fully supported and [tested][gitlab-ci] (gitlab ci)                  |
+| ![CentOS 7 (x86_64)][centos7]         | fully supported and [tested][gitlab-ci] (gitlab ci)                  |
+| ![ubuntu 14.04 (x86_64)][ubuntu14.04] | fully supported and [tested][gitlab-ci] (gitlab ci)                  |
+| ![ubuntu 16.04 (x86_64)][ubuntu16.04] | fully supported and [tested][gitlab-ci] (gitlab ci)                  |
+| ![ubuntu 18.04 (x86_64)][ubuntu18.04] | fully supported and [tested][gitlab-ci] (gitlab ci)                  |
+| ![Debian Stretch (armhf32)][armhf32]  | experimental, [tests][drone-io] are failing (drone.io)               |
+| ![Debian Stretch (aarch64)][aarch64]  | fully supported and [tested][drone-io] (drone.io)                    |
+| **Windows**                           |                                                                      |
+| ![Windows 32bit][windows32]           | not supported                                                        |
+| ![Windows 64bit][windows64]           | fully supported and [tested][travis-ci] (travis ci)                  |
+| **MacOS**                             |                                                                      |
+| ![macOS][macos]                       | fully supported and [tested][travis-ci] (travis ci)                  |
+| **Others**                            |                                                                      |
+| ![Solaris][solaris]                   | not supported                                                        |
+| ![FreeBSD][freebsd]                   | not supported                                                        |
 
 A note to Windows: jsass may also work on Windows.
 But at the moment there are no automated tests and the platform is not well tested!
@@ -56,20 +80,76 @@ But at the moment there are no automated tests and the platform is not well test
 [java8]: https://img.shields.io/badge/Java-8-green.svg?style=flat
 [java11]: https://img.shields.io/badge/Java-11-green.svg?style=flat
 
-[centos6]: https://img.shields.io/badge/CentOS-6%20%28x86_64%29-green.svg?style=flat
-[centos7]: https://img.shields.io/badge/CentOS-7%20%28x86_64%29-green.svg?style=flat
-[ubuntu12.04]: https://img.shields.io/badge/ubuntu-12.04%20%28x86_64%29-green.svg?style=flat
-[ubuntu14.04]: https://img.shields.io/badge/ubuntu-14.04%20%28x86_64%29-green.svg?style=flat
+[centos6_32]: https://img.shields.io/badge/CentOS_6-x86-red.svg?style=flat
+[centos6]: https://img.shields.io/badge/CentOS_6-x86__64-green.svg?style=flat
+[centos7]: https://img.shields.io/badge/CentOS_7-x86__64-green.svg?style=flat
+
+[ubuntu14.04]: https://img.shields.io/badge/ubuntu_14.04-x86__64-green.svg?style=flat
+[ubuntu16.04]: https://img.shields.io/badge/ubuntu_16.04-x86__64-green.svg?style=flat
+[ubuntu18.04]: https://img.shields.io/badge/ubuntu_18.04-x86__64-green.svg?style=flat
+
+[armhf32]: https://img.shields.io/badge/Debian_Stretch-arm_(armhf32)-yellow.svg?style=flat
+[aarch64]: https://img.shields.io/badge/Debian_Stretch-arm64_(aarch64)-green.svg?style=flat
 
 [windows32]: https://img.shields.io/badge/Windows-32bit-red.svg?style=flat
-[windows64]: https://img.shields.io/badge/Windows-64bit-yellow.svg?style=flat
+[windows64]: https://img.shields.io/badge/Windows-64bit-green.svg?style=flat
 
-[osx]: https://img.shields.io/badge/OS%20X-10+-green.svg?style=flat
-
-[armhf32]: https://img.shields.io/badge/ARM_(armhf32)-experimental-yellow.svg?style=flat
+[macos]: https://img.shields.io/badge/macOS-10+-green.svg?style=flat
 
 [gitlab-ci]: https://gitlab.com/jsass/jsass/pipelines
 [travis-ci]: https://travis-ci.org/bit3/jsass
+[drone-io]: https://cloud.drone.io/bit3/jsass
+
+[solaris]: https://img.shields.io/badge/Solaris-red.svg?style=flat
+[freebsd]: https://img.shields.io/badge/FreeBSD-red.svg?style=flat
+
+Testing Matrix
+--------------
+
+A matrix of all CI systems and jobs, used for testing.
+
+|                                       | OpenJDK 8                                                                     | OpenJDK 11                                                                     | OpenJDK 12                                                                     |
+|---------------------------------------|-------------------------------------------------------------------------------|--------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| ![CentOS 6 (x86_64)][centos6]         | ![Gitlab CI / test-centos6-openjdk8][gitlab-ci-test-centos6-openjdk8]         | ![Gitlab CI / test-centos6-openjdk8][gitlab-ci-test-centos6-openjdk11]         | ![Gitlab CI / test-centos6-openjdk8][gitlab-ci-test-centos6-openjdk12]         |
+| ![CentOS 7 (x86_64)][centos7]         | ![Gitlab CI / test-centos7-openjdk8][gitlab-ci-test-centos7-openjdk8]         | ![Gitlab CI / test-centos7-openjdk8][gitlab-ci-test-centos7-openjdk11]         | ![Gitlab CI / test-centos7-openjdk8][gitlab-ci-test-centos7-openjdk12]         |
+| ![ubuntu 14.04 (x86_64)][ubuntu14.04] | ![Gitlab CI / test-ubuntu14.04-openjdk8][gitlab-ci-test-ubuntu14.04-openjdk8] | ![Gitlab CI / test-ubuntu14.04-openjdk8][gitlab-ci-test-ubuntu14.04-openjdk11] | ![Gitlab CI / test-ubuntu14.04-openjdk8][gitlab-ci-test-ubuntu14.04-openjdk12] |
+| ![ubuntu 16.04 (x86_64)][ubuntu16.04] | ![Gitlab CI / test-ubuntu16.04-openjdk8][gitlab-ci-test-ubuntu16.04-openjdk8] | ![Gitlab CI / test-ubuntu16.04-openjdk8][gitlab-ci-test-ubuntu16.04-openjdk11] | ![Gitlab CI / test-ubuntu16.04-openjdk8][gitlab-ci-test-ubuntu16.04-openjdk12] |
+| ![ubuntu 18.04 (x86_64)][ubuntu18.04] | ![Gitlab CI / test-ubuntu18.04-openjdk8][gitlab-ci-test-ubuntu18.04-openjdk8] | ![Gitlab CI / test-ubuntu18.04-openjdk8][gitlab-ci-test-ubuntu18.04-openjdk11] | ![Gitlab CI / test-ubuntu18.04-openjdk8][gitlab-ci-test-ubuntu18.04-openjdk12] |
+| ![ARM (armhf32)][armhf32]             | ![Drone.io / test-arm-openjdk8][drone.io-test-arm-openjdk8]                   | ![Drone.io / test-arm-openjdk8][drone.io-test-arm-openjdk11]                   |                                                                                |
+| ![ubuntu 16.04 (aarch64)][aarch64]    | ![Drone.io / test-arm64-openjdk8][drone.io-test-arm64-openjdk8]               | ![Drone.io / test-arm64-openjdk8][drone.io-test-arm64-openjdk11]               |                                                                                |
+| ![Windows 64bit][windows64]           |                                                                               | ![Travis CI / OS: Windows][travis-ci-os-windows]                               |                                                                                |
+| ![OS X][osx]                          |                                                                               | ![Travis CI / OS: MacOS][travis-ci-os-macos]                                   |                                                                                |
+
+[gitlab-ci-test-centos6-openjdk8]: https://img.shields.io/badge/Gitlab_CI-test--centos6--openjdk8-blue.svg?style=flat
+[gitlab-ci-test-centos6-openjdk11]: https://img.shields.io/badge/Gitlab_CI-test--centos6--openjdk11-blue.svg?style=flat
+[gitlab-ci-test-centos6-openjdk12]: https://img.shields.io/badge/Gitlab_CI-test--centos6--openjdk12-blue.svg?style=flat
+
+[gitlab-ci-test-centos7-openjdk8]: https://img.shields.io/badge/Gitlab_CI-test--centos7--openjdk8-blue.svg?style=flat
+[gitlab-ci-test-centos7-openjdk11]: https://img.shields.io/badge/Gitlab_CI-test--centos7--openjdk11-blue.svg?style=flat
+[gitlab-ci-test-centos7-openjdk12]: https://img.shields.io/badge/Gitlab_CI-test--centos7--openjdk12-blue.svg?style=flat
+
+[gitlab-ci-test-ubuntu14.04-openjdk8]: https://img.shields.io/badge/Gitlab_CI-ubuntu14.04--openjdk8-blue.svg?style=flat
+[gitlab-ci-test-ubuntu14.04-openjdk11]: https://img.shields.io/badge/Gitlab_CI-ubuntu14.04--openjdk11-blue.svg?style=flat
+[gitlab-ci-test-ubuntu14.04-openjdk12]: https://img.shields.io/badge/Gitlab_CI-ubuntu14.04--openjdk12-blue.svg?style=flat
+
+[gitlab-ci-test-ubuntu16.04-openjdk8]: https://img.shields.io/badge/Gitlab_CI-ubuntu16.04--openjdk8-blue.svg?style=flat
+[gitlab-ci-test-ubuntu16.04-openjdk11]: https://img.shields.io/badge/Gitlab_CI-ubuntu16.04--openjdk11-blue.svg?style=flat
+[gitlab-ci-test-ubuntu16.04-openjdk12]: https://img.shields.io/badge/Gitlab_CI-ubuntu16.04--openjdk12-blue.svg?style=flat
+
+[gitlab-ci-test-ubuntu18.04-openjdk8]: https://img.shields.io/badge/Gitlab_CI-ubuntu18.04--openjdk8-blue.svg?style=flat
+[gitlab-ci-test-ubuntu18.04-openjdk11]: https://img.shields.io/badge/Gitlab_CI-ubuntu18.04--openjdk11-blue.svg?style=flat
+[gitlab-ci-test-ubuntu18.04-openjdk12]: https://img.shields.io/badge/Gitlab_CI-ubuntu18.04--openjdk12-blue.svg?style=flat
+
+[drone.io-test-arm-openjdk8]: https://img.shields.io/badge/Drone.io-test--arm--openjdk8-blue.svg?style=flat
+[drone.io-test-arm-openjdk11]: https://img.shields.io/badge/Drone.io-test--arm--openjdk11-blue.svg?style=flat
+[drone.io-test-arm-openjdk12]: https://img.shields.io/badge/Drone.io-test--arm--openjdk12-blue.svg?style=flat
+
+[drone.io-test-arm64-openjdk8]: https://img.shields.io/badge/Drone.io-test--arm64--openjdk8-blue.svg?style=flat
+[drone.io-test-arm64-openjdk11]: https://img.shields.io/badge/Drone.io-test--arm64--openjdk11-blue.svg?style=flat
+[drone.io-test-arm64-openjdk12]: https://img.shields.io/badge/Drone.io-test--arm64--openjdk12-blue.svg?style=flat
+
+[travis-ci-os-windows]: https://img.shields.io/badge/Travis_CI-OS:_Windows-blue.svg?style=flat
+[travis-ci-os-macos]: https://img.shields.io/badge/Travis_CI-OS:_macOS-blue.svg?style=flat
 
 Gradle tasks you should know
 ----------------------------
@@ -80,17 +160,6 @@ Gradle tasks you should know
 
 `gradle buildNativeLibs` build the native libs, using our build docker container.
 
-Build scripts
--------------
-
-*Our build scripts are mostly deprecated in favor of the gradle tasks!*
-
-`./bin/make-libjsass-darwin.sh` build the native lib for OS X.
- 
-`./bin/make-libjsass-linux-x64.sh` build the native lib for Linux, using our build docker container. This is equivalent to `gradle buildNativeLinux64Libs`!
- 
-`./bin/make-libjsass-windows-x64.sh` build the native lib for Windows, using our build docker container. This is equivalent to `gradle buildNativeWindows64Libs`!
- 
 How to make a release
 ---------------------
 

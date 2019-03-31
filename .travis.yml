@@ -1,4 +1,4 @@
-language: java
+language: shell
 
 sudo: required
 
@@ -8,9 +8,7 @@ git:
 matrix:
   include:
     - os: osx
-
-before_install:
-  - ./.travis_before_install.sh
+    - os: windows
 
 install: true
 

@@ -25,9 +25,8 @@ final class NativeLoader {
   private static final String OS_FREEBSD = "freebsd";
   private static final String OS_MAC = "mac";
 
-  private static final String ARCH_I386 = "i386";
   private static final String ARCH_ARM = "arm";
-  private static final String ARCH_X86 = "x86";
+  private static final String ARCH_AARCH64 = "aarch64";
   private static final String ARCH_AMD64 = "amd64";
   private static final String ARCH_X86_64 = "x86_64";
 
@@ -63,6 +62,8 @@ final class NativeLoader {
     String osName = System.getProperty("os.name").toLowerCase();
     String osArch = System.getProperty("os.arch").toLowerCase();
     String resourceName = null;
+
+    LOG.trace("Load library \"{}\" for os {}:{}", libraryFileName, osName, osArch);
 
     if (osName.startsWith(OS_WIN)) {
       resourceName = determineWindowsLibrary(libraryFileName, osName, osArch);
@@ -149,6 +150,10 @@ final class NativeLoader {
         platform = "linux-armhf32";
         break;
 
+      case ARCH_AARCH64:
+        platform = "linux-aarch64";
+        break;
+
       default:
         unsupportedPlatform(osName, osArch);
     }
@@ -222,6 +227,8 @@ final class NativeLoader {
     ) {
       IOUtils.copy(in, out);
     }
+
+    LOG.trace("Library \"{}\" copied to \"{}\"", libraryName, file.getAbsolutePath());
 
     return file.getAbsolutePath();
   }
