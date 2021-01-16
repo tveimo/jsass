@@ -228,6 +228,7 @@ final class NativeLoader {
     }
 
     resourceName = "/" + platform + "/" + library + "." + fileExtension;
+    LOG.trace("resource name: {}", resourceName);
     return resourceName;
   }
 
