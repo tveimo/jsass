@@ -77,7 +77,7 @@ final class NativeLoader {
     } else if (osName.startsWith(OS_FREEBSD)) {
       resourceName = determineFreebsdLibrary(libraryFileName, osName, osArch);
     } else if (osName.startsWith(OS_MAC)) {
-      resourceName = determineMacLibrary(libraryFileName);
+      resourceName = determineMacLibrary(libraryFileName, osName, osArch);
     } else {
       unsupportedPlatform(osName, osArch);
     }
