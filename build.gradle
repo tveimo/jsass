@@ -347,7 +347,7 @@ task buildNativeWindows64Libs {
 // -----------------------------------------------------------------------------
 
 // Run docker tests
-task runDockerTests {
+/*task runDockerTests {
     dependsOn 'runDockerTestCentOS6x64',
               'runDockerTestCentOS7',
               'runDockerTestUbuntu1404',
@@ -389,3 +389,5 @@ task runDockerTestUbuntu1604 {
         runDockerContainer('test-ubuntu16.04')
     }
 }
+*/
+
