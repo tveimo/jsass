@@ -16,10 +16,10 @@ uploadArchives {
             }
 
             pom.project {
-                name 'io.bit3:jsass'
+                name 'com.github.tveimo:jsass'
                 packaging 'jar'
                 description 'SASS compiler using libsass.'
-                url 'https://gitlab.com/jsass/jsass'
+                url 'https://github.com/tveimo/jsass'
 
                 licenses {
                     license {
