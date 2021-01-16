@@ -41,11 +41,16 @@ final class NativeLoader {
       File dir = Files.createTempDirectory("libjsass-").toFile();
       dir.deleteOnExit();
 
-      if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
-        System.load(saveLibrary(dir, "sass"));
-      }
+      if (System.getProperty("libsass.location") != null && !System.getProperty("libsass.location").trim().isEmpty()) {
+        URL libraryResource = new URL(System.getProperty("libsass.location").trim());
+        System.load(saveLibrary(dir, libraryResource));
+      } else {
+        if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
+          System.load(saveLibrary(dir, "sass"));
+        }
 
-      System.load(saveLibrary(dir, "jsass"));
+        System.load(saveLibrary(dir, "jsass"));
+      }
     } catch (Exception exception) {
       LOG.warn(exception.getMessage(), exception);
       throw new LoaderException(exception);
@@ -232,6 +237,25 @@ final class NativeLoader {
 
     return file.getAbsolutePath();
   }
+
+  static String saveLibrary(final File dir, URL libraryResource) throws IOException {
+
+    String basename = FilenameUtils.getName(libraryResource.getPath());
+    File file = new File(dir, basename);
+    file.deleteOnExit();
+
+    try (
+            InputStream in = libraryResource.openStream();
+            OutputStream out = new FileOutputStream(file)
+    ) {
+      IOUtils.copy(in, out);
+    }
+
+    LOG.trace("Library at URL \"{}\" copied to \"{}\"", libraryResource, file.getAbsolutePath());
+
+    return file.getAbsolutePath();
+  }
+
 
   private static void unsupportedPlatform(final String osName, final String osArch) {
     throw new UnsupportedOperationException(
