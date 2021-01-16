@@ -41,8 +41,8 @@ final class NativeLoader {
       File dir = Files.createTempDirectory("libjsass-").toFile();
       dir.deleteOnExit();
 
-      if (System.getProperty("libsass.location") != null && !System.getProperty("libsass.location").trim().isEmpty()) {
-        URL libraryResource = new URL(System.getProperty("libsass.location").trim());
+      if (System.getProperty("LIBSASS") != null && !System.getProperty("LIBSASS").trim().isEmpty()) {
+        URL libraryResource = new URL(System.getProperty("LIBSASS").trim());
         System.load(saveLibrary(dir, libraryResource));
       } else {
         if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
@@ -206,10 +206,27 @@ final class NativeLoader {
    * @param library The library name.
    * @return The library resource.
    */
-  private static String determineMacLibrary(final String library) {
+  private static String determineMacLibrary(
+      final String library,
+      final String osName,
+      final String osArch
+  ) {
     String resourceName;
-    String platform = "darwin";
+    String platform = "macos";
     String fileExtension = "dylib";
+
+    switch (osArch) {
+      case ARCH_AMD64:
+        platform = "macos-aarch64";
+        break;
+      case ARCH_X86_64:
+        platform = "macos-x64";
+        break;
+
+      default:
+        unsupportedPlatform(osName, osArch);
+    }
+
     resourceName = "/" + platform + "/" + library + "." + fileExtension;
     return resourceName;
   }
