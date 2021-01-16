@@ -216,7 +216,7 @@ final class NativeLoader {
     String fileExtension = "dylib";
 
     switch (osArch) {
-      case ARCH_AMD64:
+      case ARCH_AARCH64:
         platform = "macos-aarch64";
         break;
       case ARCH_X86_64:
