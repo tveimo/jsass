@@ -41,16 +41,11 @@ final class NativeLoader {
       File dir = Files.createTempDirectory("libjsass-").toFile();
       dir.deleteOnExit();
 
-      if (System.getProperty("LIBSASS") != null && !System.getProperty("LIBSASS").trim().isEmpty()) {
-        URL libraryResource = new URL(System.getProperty("LIBSASS").trim());
-        System.load(saveLibrary(dir, libraryResource));
-      } else {
-        if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
-          System.load(saveLibrary(dir, "sass"));
-        }
-
-        System.load(saveLibrary(dir, "jsass"));
+      if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
+        System.load(saveLibrary(dir, "sass"));
       }
+
+      System.load(saveLibrary(dir, "jsass"));
     } catch (Exception exception) {
       LOG.warn(exception.getMessage(), exception);
       throw new LoaderException(exception);
